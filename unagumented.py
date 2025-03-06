@@ -3,6 +3,10 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.models import Model
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
 from tensorflow.keras.layers import Conv2D, BatchNormalization, ReLU, Add, MaxPool2D, GlobalAveragePooling2D ,Dense, Input,Dropout
 from tensorflow.keras.models import Model
@@ -188,4 +192,51 @@ plt.ylabel('Loss')
 plt.title('Training & Fine-Tuning Loss')
 plt.legend()
 
+plt.show()
+
+
+
+# Load the trained model
+model = tf.keras.models.load_model("unagumented_model.h5")
+
+# Define test dataset path
+test_dir = "C:/Users/kalid/Desktop/pythonProject34/dataset/test"
+img_size = (224, 224)  # Image input size
+
+# Get class labels from training generator
+class_labels = list(model.class_names)  # If using an ImageDataGenerator, otherwise manually set class labels
+
+# Randomly pick 5 images from the test directory
+random_images = []
+random_filenames = []
+
+for class_name in os.listdir(test_dir):
+    class_path = os.path.join(test_dir, class_name)
+    if os.path.isdir(class_path):
+        image_files = os.listdir(class_path)
+        if len(image_files) > 0:
+            selected_image = random.choice(image_files)
+            random_images.append(os.path.join(class_path, selected_image))
+            random_filenames.append(selected_image)
+
+# Predict and display results
+plt.figure(figsize=(10, 5))
+
+for i, img_path in enumerate(random_images):
+    # Load and preprocess the image
+    img = load_img(img_path, target_size=img_size)
+    img_array = img_to_array(img) / 255.0  # Normalize
+    img_array = np.expand_dims(img_array, axis=0)  # Expand dims for batch
+
+    # Predict
+    predictions = model.predict(img_array)
+    predicted_label = class_labels[np.argmax(predictions)]  # Get highest probability class
+
+    # Display the image
+    plt.subplot(1, 5, i + 1)
+    plt.imshow(img)
+    plt.title(predicted_label)
+    plt.axis("off")
+
+plt.tight_layout()
 plt.show()
