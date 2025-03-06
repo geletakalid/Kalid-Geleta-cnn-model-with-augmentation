@@ -2,7 +2,10 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+
+from tensorflow.keras.layers import Conv2D, BatchNormalization, ReLU, Add, MaxPool2D, GlobalAveragePooling2D ,Dense, Input,Dropout
+from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,7 +16,7 @@ dataset_dir = "C:/Users/kalid/Desktop/pythonProject34/dataset/train"
 
 # Image size and batch size
 img_size = (224, 224)
-batch_size = 32
+batch_size = 16
 
 # Data generator WITHOUT augmentation (for original images & validation)
 original_datagen = ImageDataGenerator(rescale=1.0/255, validation_split=0.2)
@@ -25,7 +28,8 @@ augmented_datagen = ImageDataGenerator(
     width_shift_range=0.2,
     height_shift_range=0.2,
     zoom_range=0.2,
-    horizontal_flip=True
+    horizontal_flip=True,
+validation_split=0.2
 )
 
 # Train generator (original images only)
@@ -88,65 +92,100 @@ def plotter(selected_images_uint8, augmented_images_uint8):
     plt.show()
 
 # Display augmented images
-plotter(selected_images_uint8, augmented_images_uint8)
+#plotter(selected_images_uint8, augmented_images_uint8)
+
+
+
+
+
+
+
+
+
 
 # ------ TRAIN RESNET50 MODEL --------
 
-# Load the ResNet50 model (without top layers)
 base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
 
-# Freeze the base model layers
+# Freeze the base model to train only new classification layers
 base_model.trainable = False
 
-# Add custom classification head
-x = base_model.output
-x = GlobalAveragePooling2D()(x)
+# Add new classification head
+x = GlobalAveragePooling2D()(base_model.output)
 x = Dense(512, activation='relu')(x)
-x = Dense(256, activation='relu')(x)
-x = Dense(128, activation='relu')(x)
-x = Dense(64, activation='relu')(x)
+x = Dropout(0.5)(x)
 output_layer = Dense(original_train_generator.num_classes, activation='softmax')(x)
 
-# Create final model
+# Build model
 model = Model(inputs=base_model.input, outputs=output_layer)
 
-# Compile the model
+# Compile model
 model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
 
-# Train the model using the augmented dataset
+# Define callbacks
+early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3)
+
+# Train only the new classification head first
 history = model.fit(
-    augmented_train_generator,
+    original_train_generator,
     validation_data=val_generator,
-    epochs=10,  # Adjust based on dataset size
-    steps_per_epoch=len(augmented_train_generator),
+    epochs=10,
+    steps_per_epoch=len(original_train_generator),
     validation_steps=len(val_generator),
+    callbacks=[early_stopping, lr_scheduler],
     verbose=1
 )
 
-# Save the trained model
-model.save("resnet50_brain_cancer_model.h5")
+# Unfreeze some layers for fine-tuning
+base_model.trainable = True
+for layer in base_model.layers[:140]:  # Freeze first 140 layers
+    layer.trainable = False
+
+# Recompile with a lower learning rate for fine-tuning
+model.compile(optimizer=Adam(learning_rate=0.00001), loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Fine-tune the model
+history_fine = model.fit(
+    original_train_generator,
+    validation_data=val_generator,
+    epochs=10,
+    steps_per_epoch=len(original_train_generator),
+    validation_steps=len(val_generator),
+    callbacks=[early_stopping, lr_scheduler],
+    verbose=1
+)
+
+# Save final model
+model.save("unaugmented.h5")
 
 # ------ PLOT TRAINING RESULTS --------
 
 plt.figure(figsize=(12, 5))
 
 # Accuracy plot
+plt.figure(figsize=(12, 5))
+
+# Accuracy plot
 plt.subplot(1, 2, 1)
 plt.plot(history.history['accuracy'], label='Train Accuracy')
 plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.plot(history_fine.history['accuracy'], label='Fine-Tune Train Accuracy')
+plt.plot(history_fine.history['val_accuracy'], label='Fine-Tune Validation Accuracy')
 plt.xlabel('Epochs')
 plt.ylabel('Accuracy')
-plt.title('Training & Validation Accuracy')
+plt.title('Training & Fine-Tuning Accuracy')
 plt.legend()
 
 # Loss plot
 plt.subplot(1, 2, 2)
 plt.plot(history.history['loss'], label='Train Loss')
 plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.plot(history_fine.history['loss'], label='Fine-Tune Train Loss')
+plt.plot(history_fine.history['val_loss'], label='Fine-Tune Validation Loss')
 plt.xlabel('Epochs')
 plt.ylabel('Loss')
-plt.title('Training & Validation Loss')
+plt.title('Training & Fine-Tuning Loss')
 plt.legend()
 
 plt.show()
-
