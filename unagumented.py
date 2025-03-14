@@ -160,7 +160,7 @@ history_fine = model.fit(
     verbose=1
 )
 
-# Save final model
+# Save final model(saves the model)
 model.save("unaugmented.h5")
 
 # ------ PLOT TRAINING RESULTS --------
@@ -219,7 +219,7 @@ for class_name in os.listdir(test_dir):
             random_images.append(os.path.join(class_path, selected_image))
             random_filenames.append(selected_image)
 
-# Predict and display results
+# Predict and display results(Display test results)
 plt.figure(figsize=(10, 5))
 
 for i, img_path in enumerate(random_images):
