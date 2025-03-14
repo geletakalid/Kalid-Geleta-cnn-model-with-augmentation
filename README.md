@@ -1,36 +1,36 @@
-# 🌸 Flower Classification using Deep Learning
+# Flower Classification using Deep Learning
 
-## 📌 Project Overview
+## Project Overview
 This project implements a **deep learning model** to classify flower images into **five different categories**. The model is trained on a dataset containing flower images and utilizes a **convolutional neural network (CNN)** for classification.
 
-## 📂 Dataset
+## Dataset
 The dataset consists of:
 - **Unaugmented Data**: Raw images without any modifications.
 - **Augmented Data**: Processed images with transformations such as **rotation, flipping, and scaling** to enhance model generalization.
 
-## ⚙️ Prerequisites
+## Prerequisites
 Ensure you have the following dependencies installed before running the project:
 
 ```bash
 pip install tensorflow keras numpy pandas matplotlib seaborn scikit-learn opencv-python
 ```
 
-## 🏗️ Model Architecture
+## Model Architecture
 The classification model is built using a **CNN (Convolutional Neural Network)** with the following layers:
-✅ **Convolutional layers** with ReLU activation
-✅ **Max pooling layers** for dimensionality reduction
-✅ **Fully connected dense layers**
-✅ **Softmax activation** for multi-class classification
+- **Convolutional layers** with ReLU activation
+- **Max pooling layers** for dimensionality reduction
+- **Fully connected dense layers**
+- **Softmax activation** for multi-class classification
 
-## 🎯 Training Process
-1️⃣ Load the dataset (**augmented and unaugmented images**).
-2️⃣ Preprocess images (**resize, normalize, augment**).
-3️⃣ Split data into **training and testing sets**.
-4️⃣ Train the **CNN model**.
-5️⃣ Evaluate performance using **accuracy and loss metrics**.
+## Training Process
+1. Load the dataset (**augmented and unaugmented images**).
+2. Preprocess images (**resize, normalize, augment**).
+3. Split data into **training and testing sets**.
+4. Train the **CNN model**.
+5. Evaluate performance using **accuracy and loss metrics**.
 
-## 📜 Code Explanation
-### 🔹 `train.py` (Training the Model)
+## Code Explanation
+### `train.py` (Training the Model)
 #### Step 1: Import Libraries
 ```python
 import tensorflow as tf
@@ -103,7 +103,7 @@ model.save('flower_classification_model.h5')
 - The model is trained for 10 epochs.
 - The trained model is saved for future use.
 
-### 🔹 `classify.py` (Classifying Images)
+### `classify.py` (Classifying Images)
 #### Step 1: Import Libraries
 ```python
 import tensorflow as tf
@@ -153,7 +153,7 @@ print(f'Predicted Flower: {predicted_class}')
 - `argmax` finds the class with the highest probability.
 - The corresponding flower name is retrieved and displayed.
 
-## 🚀 Usage
+## Usage
 Run the following command to **start training**:
 
 ```bash
@@ -165,24 +165,24 @@ To **classify a new image**, use:
 python classify.py --image path_to_image.jpg
 ```
 
-## 📊 Evaluation Metrics
-- ✅ **Accuracy**
-- ✅ **Precision, Recall, and F1-score**
-- ✅ **Confusion Matrix**
+## Evaluation Metrics
+- **Accuracy**
+- **Precision, Recall, and F1-score**
+- **Confusion Matrix**
 
-## 📈 Results
+## Results
 The trained model achieves **high accuracy** in classifying flower images into **five categories**. Results can be visualized using:
-- 📊 **Confusion Matrix**
-- 📉 **Accuracy/Loss plots**
+- **Confusion Matrix**
+- **Accuracy/Loss plots**
 
-## 🔮 Future Enhancements
-🔹 Implement **transfer learning** using pre-trained models like **VGG16, ResNet**
-🔹 Optimize **hyperparameters** for better performance
-🔹 Deploy as a **web application** using Flask or FastAPI
+## Future Enhancements
+- Implement **transfer learning** using pre-trained models like **VGG16, ResNet**
+- Optimize **hyperparameters** for better performance
+- Deploy as a **web application** using Flask or FastAPI
 
-## 👨‍💻 Author
-📌 **Geleta Kalid**
+## Author
+**Geleta Kalid**
 
-## 📜 License
+## License
 This project is **open-source** and available under the **MIT License**.
 
