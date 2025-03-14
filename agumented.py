@@ -23,7 +23,45 @@ batch_size = 32
 # Data generator WITHOUT augmentation (for original images & validation)
 original_datagen = ImageDataGenerator(rescale=1.0/255, validation_split=0.2)
 
+# Data generator WITH augmentation (for training only)
+augmented_datagen = ImageDataGenerator(
+    rescale=1.0/255,
+    rotation_range=30,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True,
+validation_split=0.2
+)
 
+# Train generator (original images only)
+original_train_generator = original_datagen.flow_from_directory(
+    dataset_dir,
+    target_size=img_size,
+    batch_size=batch_size,
+    class_mode='categorical',
+    subset='training',
+    shuffle=True
+)
+
+# Train generator (with augmentation)
+augmented_train_generator = augmented_datagen.flow_from_directory(
+    dataset_dir,
+    target_size=img_size,
+    batch_size=batch_size,
+    class_mode='categorical',
+    subset='training',
+    shuffle=True
+)
+
+# Validation generator (NO augmentation)
+val_generator = original_datagen.flow_from_directory(
+    dataset_dir,
+    target_size=img_size,
+    batch_size=batch_size,
+    class_mode='categorical',
+    subset='validation'
+)
 
 # ------ IMAGE AUGMENTATION PREVIEW --------
 x_batch, y_batch = next(original_train_generator)
